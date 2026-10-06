@@ -14,6 +14,11 @@ if [ ! -d "$dir" ]; then
     exit 1
 fi
 
+if ! echo "$interval" | grep -q -E '^[0-9]+$'; then
+    echo "Error: interval-secs must be a number"
+    exit 1
+fi
+
 mkdir -p "$malicious_dir"
 
 badFiles='\.(exe|bat|vbs|scr|ps1)$'
@@ -21,6 +26,10 @@ badWords='virus|trojan|malware|worm|ransomware'
 
 scan() {
     ls "$dir" | while read name; do
+
+        if [ ! -f "$dir/$name" ]; then
+            continue
+        fi
 
         isBad="no"
 
