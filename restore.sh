@@ -57,6 +57,7 @@ while true; do
 
     if [ "$action" = "1" ]; then
         mv "$malicious_dir/$name" "$dir/$name"
+        echo "$name" >> whitelist.txt  
         echo "Restored $name to $dir."
     elif [ "$action" = "2" ]; then
         rm "$malicious_dir/$name"

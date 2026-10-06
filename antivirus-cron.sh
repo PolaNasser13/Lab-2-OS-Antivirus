@@ -1,27 +1,21 @@
 #!/bin/bash
+cd "$(dirname "$0")" || exit 1
 
-if [ $# -ne 3 ]; then
-    echo "Please enter: dir, malicious_dir, interval-secs"
+if [ $# -ne 2 ]; then
+    echo "Please enter: dir, malicious_dir"
     exit 1
 fi
 
 dir="$1"
 malicious_dir="$2"
-interval="$3"
 
 if [ ! -d "$dir" ]; then
     echo "Error: $dir is not a folder"
     exit 1
 fi
 
-if ! echo "$interval" | grep -q -E '^[0-9]+$'; then
-    echo "Error: interval-secs must be a number"
-    exit 1
-fi
-
 mkdir -p "$malicious_dir"
 
-# BONUS 2: make the whitelist file if it does not exist
 touch whitelist.txt
 
 badFiles='\.(exe|bat|vbs|scr|ps1)$'
@@ -34,7 +28,6 @@ scan() {
             continue
         fi
 
-        # BONUS 2: skip the file if its name is in the whitelist
         if cat whitelist.txt | grep -x -F -q -- "$name"; then
             continue
         fi
@@ -58,17 +51,12 @@ scan() {
     done
 }
 
+ls -l "$dir" > directory-info.new
+
 if [ ! -f directory-info.last ]; then
     scan
-    ls -l "$dir" > directory-info.last
+    cp directory-info.new directory-info.last
+elif ! cmp -s directory-info.last directory-info.new; then
+    scan
+    cp directory-info.new directory-info.last
 fi
-
-while true; do
-    sleep "$interval"
-    ls -l "$dir" > directory-info.new
-
-    if ! cmp -s directory-info.last directory-info.new; then
-        scan
-        cp directory-info.new directory-info.last
-    fi
-done
